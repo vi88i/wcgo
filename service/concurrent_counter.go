@@ -14,8 +14,8 @@ func NewConcurrentCounter() *ConcurrentCounter {
 	}
 }
 
-func (c *ConcurrentCounter) Increment(key string) {
+func (c *ConcurrentCounter) Increment(key string, count uint64) {
 	c.Mutex.Lock()
 	defer c.Mutex.Unlock()
-	c.Store[key]++
+	c.Store[key] += count
 }

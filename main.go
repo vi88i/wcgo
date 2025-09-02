@@ -14,17 +14,16 @@ import (
 	"wcgo/worker"
 )
 
-func startWork(files []string, words []string, numWorkers float64) {
+func startWork(files []string, words []string, excludeFilePatterns []string, numWorkers float64) {
 	counter := service.NewConcurrentCounter()
 	jobs := make(chan string, constants.JobBuffer)
 	wg := sync.WaitGroup{}
 
 	for i := 1; i <= int(numWorkers); i++ {
-		go worker.CounterWorker(jobs, words, counter, &wg)
+		go worker.CounterWorker(jobs, words, excludeFilePatterns, counter, &wg)
 	}
 
 	for _, file := range files {
-		fmt.Println(file)
 		jobs <- file
 	}
 	close(jobs)
@@ -35,9 +34,10 @@ func startWork(files []string, words []string, numWorkers float64) {
 
 func main() {
 	var (
-		dirPtr     = flag.String("dir", constants.NoDirectory, "Directory path")
-		workersPtr = flag.String("workers", strconv.Itoa(int(constants.MinWorkers)), "Number of workers")
-		wordsPtr   = flag.String("words", "", "Set of words to be tracked (csv)")
+		dirPtr         = flag.String("dir", constants.NoDirectory, "Directory path")
+		workersPtr     = flag.String("workers", strconv.Itoa(int(constants.MinWorkers)), "Number of workers")
+		wordsPtr       = flag.String("words", "", "Set of words to be tracked (csv)")
+		excludeFilePtr = flag.String("exclude", constants.DefaultExcludedFilesPattern, "Comma-separated list of keywords - files containing these keywords in their names will be skipped (e.g., 'test,vendor,node_modules')")
 	)
 
 	flag.Parse()
@@ -55,7 +55,11 @@ func main() {
 		}
 	}
 
-	files := util.GetFiles(dir)
-	words := strings.Split(*wordsPtr, ",")
-	startWork(files, words, numWorkers)
+	var (
+		files               = util.GetFiles(dir)
+		words               = strings.Split(*wordsPtr, ",")
+		excludeFilePatterns = strings.Split(*excludeFilePtr, ",")
+	)
+
+	startWork(files, words, excludeFilePatterns, numWorkers)
 }

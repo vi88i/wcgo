@@ -1,5 +1,6 @@
 package constants
 
 const (
-	NoDirectory = "NoDirectory"
+	NoDirectory                 = "NoDirectory"
+	DefaultExcludedFilesPattern = ".git,node_modules,.vscode,dist"
 )
