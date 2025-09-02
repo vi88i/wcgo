@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math"
@@ -8,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"wcgo/constants"
 	"wcgo/service"
 	"wcgo/util"
@@ -29,7 +31,12 @@ func startWork(files []string, words []string, excludeFilePatterns []string, num
 	close(jobs)
 
 	wg.Wait()
-	fmt.Print(counter.Store)
+	jsonData, err := json.Marshal(counter.Store)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		return
+	}
+	fmt.Println(string(jsonData))
 }
 
 func main() {
@@ -55,6 +62,7 @@ func main() {
 		}
 	}
 
+	startTime := time.Now()
 	var (
 		files               = util.GetFiles(dir)
 		words               = strings.Split(*wordsPtr, ",")
@@ -62,4 +70,7 @@ func main() {
 	)
 
 	startWork(files, words, excludeFilePatterns, numWorkers)
+
+	elapsedTime := time.Since(startTime)
+	fmt.Printf("Elapsed Time: %v\n", elapsedTime)
 }
