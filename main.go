@@ -31,7 +31,7 @@ func startWork(files []string, words []string, excludeFilePatterns []string, num
 	close(jobs)
 
 	wg.Wait()
-	jsonData, err := json.Marshal(counter.Store)
+	jsonData, err := json.MarshalIndent(counter.Store, "", "  ")
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
 		return
